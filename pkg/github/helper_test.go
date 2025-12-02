@@ -260,15 +260,17 @@ func TestOptionalParamOK(t *testing.T) {
 	}
 }
 
-func getResourceResult(t *testing.T, result *mcp.CallToolResult) *mcp.ResourceContents {
+func getFileSummaryAndContent(t *testing.T, result *mcp.CallToolResult) (*mcp.TextContent, mcp.Content) {
 	t.Helper()
 	assert.NotNil(t, result)
-	require.Len(t, result.Content, 2)
-	content := result.Content[1]
-	require.IsType(t, &mcp.EmbeddedResource{}, content)
-	resource, ok := content.(*mcp.EmbeddedResource)
-	require.True(t, ok, "expected content to be of type EmbeddedResource")
+	require.NotEmpty(t, result.Content)
 
-	require.IsType(t, &mcp.ResourceContents{}, resource.Resource)
-	return resource.Resource
+	summary, ok := result.Content[0].(*mcp.TextContent)
+	require.True(t, ok, "expected first content part to be a TextContent summary")
+
+	if len(result.Content) > 1 {
+		return summary, result.Content[1]
+	}
+
+	return summary, nil
 }

@@ -62,6 +62,11 @@ func Test_GetFileContents(t *testing.T) {
 		},
 	}
 
+	type metadataExpectation struct {
+		uri  string
+		mime string
+	}
+
 	tests := []struct {
 		name           string
 		mockedClient   *http.Client
@@ -200,10 +205,9 @@ func Test_GetFileContents(t *testing.T) {
 				"ref":   "refs/heads/main",
 			},
 			expectError: false,
-			expectedResult: mcp.ResourceContents{
-				URI:      "repo://owner/repo/refs/heads/main/contents/document.pdf",
-				Blob:     mockRawContent,
-				MIMEType: "application/pdf",
+			expectedResult: metadataExpectation{
+				uri:  "repo://owner/repo/refs/heads/main/contents/document.pdf",
+				mime: "application/pdf",
 			},
 		},
 		{
@@ -306,9 +310,25 @@ func Test_GetFileContents(t *testing.T) {
 			// Use the correct result helper based on the expected type
 			switch expected := tc.expectedResult.(type) {
 			case mcp.ResourceContents:
-				// Handle both text and blob resources
-				resource := getResourceResult(t, result)
-				assert.Equal(t, expected, *resource)
+				summary, content := getFileSummaryAndContent(t, result)
+				assert.Contains(t, summary.Text, expected.URI)
+				assert.Contains(t, summary.Text, expected.MIMEType)
+				require.NotNil(t, content, "expected file content to be present")
+
+				switch actual := content.(type) {
+				case *mcp.TextContent:
+					assert.Equal(t, expected.Text, actual.Text)
+				case *mcp.ImageContent:
+					assert.Equal(t, expected.MIMEType, actual.MIMEType)
+					assert.Equal(t, expected.Blob, actual.Data)
+				default:
+					require.Failf(t, "unexpected content type", "file result produced unsupported content type %T", content)
+				}
+			case metadataExpectation:
+				summary, content := getFileSummaryAndContent(t, result)
+				assert.Contains(t, summary.Text, expected.uri)
+				assert.Contains(t, summary.Text, expected.mime)
+				assert.Nil(t, content, "expected metadata-only response to omit file content")
 			case []*github.RepositoryContent:
 				// Directory content fetch returns a text result (JSON array)
 				textContent := getTextResult(t, result)

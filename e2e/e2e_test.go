@@ -497,13 +497,9 @@ func TestFileDeletion(t *testing.T) {
 	require.NoError(t, err, "expected to call 'get_file_contents' tool successfully")
 	require.False(t, resp.IsError, fmt.Sprintf("expected result not to be an error: %+v", resp))
 
-	embeddedResource, ok := resp.Content[1].(*mcp.EmbeddedResource)
-	require.True(t, ok, "expected content to be of type EmbeddedResource")
-
-	// Access Resource directly - ResourceContents is a pointer, not an interface
-	textResource := embeddedResource.Resource
-	require.NotNil(t, textResource, "expected embedded resource to have Resource")
-
+	require.GreaterOrEqual(t, len(resp.Content), 2, "expected summary + file content")
+	textResource, ok := resp.Content[1].(*mcp.TextContent)
+	require.True(t, ok, "expected file payload to be TextContent")
 	require.Equal(t, fmt.Sprintf("Created by e2e test %s", t.Name()), textResource.Text, "expected file content to match")
 
 	// Delete the file
@@ -687,13 +683,9 @@ func TestDirectoryDeletion(t *testing.T) {
 	require.NoError(t, err, "expected to call 'get_file_contents' tool successfully")
 	require.False(t, resp.IsError, fmt.Sprintf("expected result not to be an error: %+v", resp))
 
-	embeddedResource, ok := resp.Content[1].(*mcp.EmbeddedResource)
-	require.True(t, ok, "expected content to be of type EmbeddedResource")
-
-	// Access Resource directly - ResourceContents is a pointer, not an interface
-	textResource := embeddedResource.Resource
-	require.NotNil(t, textResource, "expected embedded resource to have Resource")
-
+	require.GreaterOrEqual(t, len(resp.Content), 2, "expected summary + file content")
+	textResource, ok := resp.Content[1].(*mcp.TextContent)
+	require.True(t, ok, "expected file payload to be TextContent")
 	require.Equal(t, fmt.Sprintf("Created by e2e test %s", t.Name()), textResource.Text, "expected file content to match")
 
 	// Delete the directory containing the file
