@@ -46,30 +46,31 @@ func NewToolResultResource(message string, contents *mcp.ResourceContents) *mcp.
 	}
 
 	result := &mcp.CallToolResult{
-		Content: []mcp.Content{
-			&mcp.TextContent{
-				Text: summary,
-			},
-		},
+		Content: []mcp.Content{},
 		IsError: false,
 	}
 
 	if contents == nil {
+		result.Content = append(result.Content, &mcp.TextContent{Text: summary})
 		return result
 	}
 
 	switch {
 	case contents.Text != "":
-		result.Content = append(result.Content, &mcp.TextContent{
-			Text: contents.Text,
-		})
+		result.Content = append(result.Content,
+			&mcp.TextContent{Text: contents.Text},
+			&mcp.TextContent{Text: summary},
+		)
 	case len(contents.Blob) > 0 && strings.HasPrefix(contents.MIMEType, "image/"):
-		result.Content = append(result.Content, &mcp.ImageContent{
-			Data:     contents.Blob,
-			MIMEType: contents.MIMEType,
-		})
+		result.Content = append(result.Content,
+			&mcp.ImageContent{
+				Data:     contents.Blob,
+				MIMEType: contents.MIMEType,
+			},
+			&mcp.TextContent{Text: summary},
+		)
 	default:
-		// For non-text, non-image content we intentionally return metadata only.
+		result.Content = append(result.Content, &mcp.TextContent{Text: summary})
 	}
 
 	return result

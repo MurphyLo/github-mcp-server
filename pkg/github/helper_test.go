@@ -260,17 +260,19 @@ func TestOptionalParamOK(t *testing.T) {
 	}
 }
 
-func getFileSummaryAndContent(t *testing.T, result *mcp.CallToolResult) (*mcp.TextContent, mcp.Content) {
+func getFileContentAndSummary(t *testing.T, result *mcp.CallToolResult) (mcp.Content, *mcp.TextContent) {
 	t.Helper()
 	assert.NotNil(t, result)
-	require.NotEmpty(t, result.Content)
+	require.NotEmpty(t, result.Content, "expected at least one content entry")
 
-	summary, ok := result.Content[0].(*mcp.TextContent)
-	require.True(t, ok, "expected first content part to be a TextContent summary")
-
-	if len(result.Content) > 1 {
-		return summary, result.Content[1]
+	if len(result.Content) == 1 {
+		summary, ok := result.Content[0].(*mcp.TextContent)
+		require.True(t, ok, "expected summary to be TextContent")
+		return nil, summary
 	}
 
-	return summary, nil
+	payload := result.Content[0]
+	summary, ok := result.Content[1].(*mcp.TextContent)
+	require.True(t, ok, "expected summary to be TextContent")
+	return payload, summary
 }

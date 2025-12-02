@@ -497,8 +497,8 @@ func TestFileDeletion(t *testing.T) {
 	require.NoError(t, err, "expected to call 'get_file_contents' tool successfully")
 	require.False(t, resp.IsError, fmt.Sprintf("expected result not to be an error: %+v", resp))
 
-	require.GreaterOrEqual(t, len(resp.Content), 2, "expected summary + file content")
-	textResource, ok := resp.Content[1].(*mcp.TextContent)
+	require.GreaterOrEqual(t, len(resp.Content), 2, "expected file content + summary")
+	textResource, ok := resp.Content[0].(*mcp.TextContent)
 	require.True(t, ok, "expected file payload to be TextContent")
 	require.Equal(t, fmt.Sprintf("Created by e2e test %s", t.Name()), textResource.Text, "expected file content to match")
 
@@ -683,8 +683,8 @@ func TestDirectoryDeletion(t *testing.T) {
 	require.NoError(t, err, "expected to call 'get_file_contents' tool successfully")
 	require.False(t, resp.IsError, fmt.Sprintf("expected result not to be an error: %+v", resp))
 
-	require.GreaterOrEqual(t, len(resp.Content), 2, "expected summary + file content")
-	textResource, ok := resp.Content[1].(*mcp.TextContent)
+	require.GreaterOrEqual(t, len(resp.Content), 2, "expected file content + summary")
+	textResource, ok := resp.Content[0].(*mcp.TextContent)
 	require.True(t, ok, "expected file payload to be TextContent")
 	require.Equal(t, fmt.Sprintf("Created by e2e test %s", t.Name()), textResource.Text, "expected file content to match")
 

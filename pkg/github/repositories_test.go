@@ -310,10 +310,11 @@ func Test_GetFileContents(t *testing.T) {
 			// Use the correct result helper based on the expected type
 			switch expected := tc.expectedResult.(type) {
 			case mcp.ResourceContents:
-				summary, content := getFileSummaryAndContent(t, result)
+				content, summary := getFileContentAndSummary(t, result)
+				require.NotNil(t, content, "expected file content to be present")
+				require.NotNil(t, summary, "expected summary to be present")
 				assert.Contains(t, summary.Text, expected.URI)
 				assert.Contains(t, summary.Text, expected.MIMEType)
-				require.NotNil(t, content, "expected file content to be present")
 
 				switch actual := content.(type) {
 				case *mcp.TextContent:
@@ -325,7 +326,8 @@ func Test_GetFileContents(t *testing.T) {
 					require.Failf(t, "unexpected content type", "file result produced unsupported content type %T", content)
 				}
 			case metadataExpectation:
-				summary, content := getFileSummaryAndContent(t, result)
+				content, summary := getFileContentAndSummary(t, result)
+				require.NotNil(t, summary, "expected summary to be present")
 				assert.Contains(t, summary.Text, expected.uri)
 				assert.Contains(t, summary.Text, expected.mime)
 				assert.Nil(t, content, "expected metadata-only response to omit file content")
